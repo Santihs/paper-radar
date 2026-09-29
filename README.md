@@ -43,11 +43,49 @@ the models' training data, so `pick` measures judgment, not comprehension of new
 
 ## Guardrails
 
+Two independent layers: one in this repo, one on the OpenRouter key.
+
+**1. Code gate (before any call).**
+
 - Public data only (arXiv). No company, client or personal data.
 - `paper-radar eval` refuses to run unless every provider goes through OpenRouter, belongs to an
-  allowed vendor (`ALLOWED_VENDORS` in `src/paper_radar/config.py`) and sets
-  `provider.data_collection: deny`. The same rule is a test (`tests/test_governance.py`).
+  allowed vendor (`ALLOWED_VENDORS` in `src/paper_radar/config.py`), sets
+  `provider.data_collection: deny` and stays on pinned, allowed hosts (`allow_fallbacks: false`).
+  The same rule is a test (`tests/test_governance.py`).
 - promptfoo is pinned, telemetry and sharing are disabled, and `--no-share` is always passed.
+
+**2. OpenRouter workspace Guardrail (enforced server-side on the key).** The key lives in a
+workspace whose Guardrail allows only the 4 models above, only the pinned hosts, and a budget.
+It holds even if someone uses the key outside this code.
+
+Verify it (key read from `.env`, never printed):
+
+```powershell
+pwsh scripts/check-guardrail.ps1                # 2 non-approved models + 1 approved (< $0.001)
+pwsh scripts/check-guardrail.ps1 -AllApproved   # also call all 4 approved models
+```
+
+Expected output:
+
+```
+Models outside the allowlist (expected: rejected by Guardrail, no cost)
+  PASS  deepseek/deepseek-v4.1-flash -> 404 Filter by Guardrails (model-ignored-by-guardrail, ...)
+  PASS  qwen/qwen3.8-flash -> 404 Filter by Guardrails (model-ignored-by-guardrail)
+
+Approved models (expected: answer)
+  PASS  google/gemini-3.8-flash -> 200 answered
+```
+
+Notes:
+
+- OpenRouter rejects at the routing step: the answer is `404` with
+  `failed_routing_step: "Filter by Guardrails"`, not a `403`. The request never reaches a model,
+  so it costs nothing.
+- Use real model IDs. A made-up ID fails as "invalid model" and proves nothing about the Guardrail.
+- Activity > Guardrails counts content blocks (prompt injection, PII) only; allowlist rejections
+  do not show there. The terminal output is the evidence.
+- If an approved model fails: the budget may be reached, the key may have been created outside the
+  workspace, or the model or host is missing from the allowlist.
 
 ## Tests
 
