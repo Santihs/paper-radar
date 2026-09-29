@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choosing AI Models with Evidence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07080A;
+    --card: #111317;
+    --line: #262A31;
+    --text: #F4F4F5;
+    --soft: #A1A7B3;
+    --faint: #5C6270;
+    --lime: #C5F82A;
+    --lime-soft: rgba(197, 248, 42, 0.10);
+    --lime-edge: rgba(197, 248, 42, 0.35);
+    --red: #F87171;
+    --red-soft: rgba(248, 113, 113, 0.10);
+    --red-edge: rgba(248, 113, 113, 0.30);
+    --title: "Montserrat", "Segoe UI", sans-serif;
+    --body: "Open Sans", "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", Consolas, monospace;
+  }
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: var(--body);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @media screen {
+    body { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 24px 0; background: #000; }
+    .slide { border: 1px solid var(--line); border-radius: 12px; }
+  }
+
+  .slide { position: relative; width: 1280px; height: 720px; padding: 60px 88px 56px;
+    display: flex; flex-direction: column; overflow: hidden; background: var(--bg);
+    break-after: page; page-break-after: always; }
+  .num { position: absolute; right: 56px; bottom: 32px; font-size: 14px; color: var(--faint); }
+
+  .kicker { font-weight: 700; font-size: 15px; letter-spacing: .16em; text-transform: uppercase; color: var(--lime); margin-bottom: 10px; }
+  h1 { font-family: var(--title); font-weight: 500; font-size: 58px; line-height: 1.12; letter-spacing: -.01em; }
+  h2 { font-family: var(--title); font-weight: 500; font-size: 44px; line-height: 1.15; letter-spacing: -.01em; }
+  .bar { width: 88px; height: 4px; border-radius: 2px; background: var(--lime); margin-top: 24px; }
+  .body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .lead { font-size: 24px; color: var(--soft); line-height: 1.5; }
+  .note { font-size: 21px; color: var(--soft); margin-top: 30px; }
+  .note b { color: var(--text); }
+  .l { color: var(--lime); }
+  .r { color: var(--red); }
+  code { font-family: var(--mono); font-size: .85em; color: var(--lime); }
+
+  .cards { display: grid; gap: 22px; }
+  .c2 { grid-template-columns: repeat(2, 1fr); }
+  .c3 { grid-template-columns: repeat(3, 1fr); }
+  .c4 { grid-template-columns: repeat(4, 1fr); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 28px 28px; }
+  .card.lime { background: var(--lime-soft); border-color: var(--lime-edge); }
+  .card.red { background: var(--red-soft); border-color: var(--red-edge); }
+  .card h3 { font-family: var(--title); font-weight: 500; font-size: 25px; margin: 14px 0 8px; line-height: 1.25; }
+  .card p { font-size: 18px; color: var(--soft); line-height: 1.45; }
+  .ico { width: 38px; height: 38px; color: var(--lime); }
+  .ico.r { color: var(--red); }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 15px; color: var(--lime); background: var(--lime-soft); border-radius: 6px; padding: 3px 9px; }
+
+  .list { list-style: none; }
+  .list li { font-size: 21px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .list li:last-child { border-bottom: none; }
+  .head { font-family: var(--title); font-size: 19px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+
+  /* numbered list, like the reference "5 keys" slide */
+  .keys { list-style: none; display: grid; gap: 18px; }
+  .keys li { display: flex; align-items: center; gap: 22px; font-size: 24px; }
+  .keys li .n { flex: none; width: 50px; height: 50px; border-radius: 50%; background: var(--lime); color: var(--bg);
+    font-family: var(--title); font-weight: 600; font-size: 21px; display: grid; place-items: center; }
+  .keys li small { color: var(--soft); font-size: 19px; margin-left: 6px; }
+
+  /* timeline, like the reference "my path" slide */
+  .timeline { display: grid; position: relative; }
+  .timeline::before { content: ""; position: absolute; top: 34px; left: 34px; right: 0; height: 2px; background: var(--line); }
+  .t4 { grid-template-columns: repeat(4, 1fr); }
+  .t5 { grid-template-columns: repeat(5, 1fr); }
+  .t4::before { right: 25%; } .t5::before { right: 20%; }
+  .tstep .dot { position: relative; width: 68px; height: 68px; border-radius: 50%; background: var(--lime); color: var(--bg);
+    font-family: var(--title); font-size: 28px; font-weight: 600; display: grid; place-items: center; }
+  .tstep h3 { font-family: var(--title); font-weight: 500; font-size: 24px; margin: 20px 0 8px; }
+  .tstep p { font-size: 17px; color: var(--soft); line-height: 1.45; padding-right: 22px; }
+  .tstep code { font-size: 14px; }
+
+  .flow { display: flex; align-items: center; gap: 18px; }
+  .flow .box { flex: 1; text-align: center; padding: 22px 14px; border-radius: 16px; background: var(--card);
+    border: 1px solid var(--line); font-family: var(--title); font-size: 21px; }
+  .flow .box.hub { border-color: var(--lime); background: var(--lime-soft); color: var(--lime); }
+  .arrow { color: var(--lime); font-size: 26px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 21px; }
+  th { font-family: var(--title); font-weight: 500; font-size: 15px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--soft); text-align: center; padding: 0 12px 12px; }
+  th:first-child, td:first-child { text-align: left; }
+  td { padding: 14px 12px; text-align: center; border-top: 1px solid var(--line); }
+
+  .row { display: flex; gap: 52px; flex: 1; align-items: center; }
+  .grow { flex: 1; min-width: 0; }
+
+  .terminal { background: #0B0D10; border: 1px solid var(--line); border-radius: 14px; padding: 18px 24px;
+    font-family: var(--mono); font-size: 18px; line-height: 1.6; }
+  .prompt { color: var(--lime); }
+
+  /* placeholders: replace the div with <img src="img/NAME.png" style="width:100%;height:100%;object-fit:contain;border-radius:18px"> */
+  .img { border: 2px dashed rgba(197,248,42,.4); border-radius: 18px; background: var(--card);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    gap: 8px; padding: 24px; color: var(--soft); flex: none; }
+  .img b { font-size: 13px; letter-spacing: .16em; color: var(--lime); }
+  .img span { font-size: 16px; max-width: 340px; line-height: 1.4; }
+
+  .quote { border-left: 4px solid var(--lime); padding-left: 26px; font-size: 26px; line-height: 1.45; color: var(--soft); }
+  .quote b { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- 1 · Title -->
+<section class="slide">
+  <div class="row">
+    <div class="grow">
+      <div class="kicker">AI in real work</div>
+      <h1 style="white-space:nowrap">Choosing AI models<br>with evidence</h1>
+      <p class="lead" style="margin-top:14px">OpenRouter + promptfoo: a safe way to compare LLMs</p>
+      <div class="bar"></div>
+    </div>
+    <img src="img/openrouter-logo.png" alt="OpenRouter" style="width:340px;flex:none;margin-right:30px">
+  </div>
+  <p style="color:var(--faint);font-size:18px">[Your name] · [Date]</p>
+</section>
+
+<!-- 2 · Question -->
+<section class="slide">
+  <div class="body" style="align-items:center;text-align:center">
+    <div class="kicker">Quick question</div>
+    <h1>Which model should we use?</h1>
+    <p class="lead" style="margin-top:22px;font-size:28px">GPT, Claude, Gemini, Grok…</p>
+    <p style="font-family:var(--title);font-size:40px;margin-top:10px" class="l">and why?</p>
+  </div>
+  <span class="num">2</span>
+</section>
+
+<!-- 3 · The problem -->
+<section class="slide">
+  <div class="kicker">The problem</div>
+  <h2>We pick models by gut feeling</h2>
+  <div class="bar"></div>
+  <div class="row">
+    <div class="grow">
+      <ul class="keys">
+        <li><span class="n">1</span><span>A new model <b>every week</b></span></li>
+        <li><span class="n">2</span><span>Every vendor, <b>its own API</b><small>lock-in</small></span></li>
+        <li><span class="n">3</span><span>We choose by <b>hype</b> or "it worked for me"</span></li>
+        <li><span class="n">4</span><span>Expensive decisions, <b class="l">no evidence</b></span></li>
+      </ul>
+    </div>
+    <img src="img/overwhelmed-engineer-green.png" alt="Developer overwhelmed by too many options" style="width:400px;flex:none">
+  </div>
+  <span class="num">3</span>
+</section>
+
+<!-- 4 · The risk -->
+<section class="slide">
+  <div class="kicker">The risk</div>
+  <h2>Two ways to fail, one way through</h2>
+  <div class="bar"></div>
+  <div class="body">
+    <div class="cards c3">
+      <div class="card red">
+        <svg class="ico r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+        <h3>Don't experiment</h3><p>Out of fear. We fall behind.</p>
+      </div>
+      <div class="card red">
+        <svg class="ico r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+        <h3>Experiment with real data</h3><p>Code, customers or PII sent to third parties.</p>
+      </div>
+      <div class="card lime">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+        <h3>The middle path</h3><p>A sandbox with rules.</p>
+      </div>
+    </div>
+  </div>
+  <span class="num">4</span>
+</section>
+
+<!-- 5 · Safe sandbox -->
+<section class="slide">
+  <div class="kicker">Safe sandbox</div>
+  <h2>Five rules before any code</h2>
+  <div class="bar"></div>
+  <div class="body">
+    <ul class="keys">
+      <li><span class="n">1</span><span><b>Public data only</b><small>arXiv papers</small></span></li>
+      <li><span class="n">2</span><span><b>Approved models</b>, run by their maker or a major cloud</span></li>
+      <li><span class="n">3</span><span><b>No retention</b>, no training on prompts</span></li>
+      <li><span class="n">4</span><span><b>Spend limit</b> on the key</span></li>
+      <li><span class="n">5</span><span><b>Manager approved</b><small>testing-only request sent</small></span></li>
+    </ul>
+  </div>
+  <span class="num">5</span>
+</section>
+
+<!-- 6 · OpenRouter -->
+<section class="slide">
+  <div class="kicker">OpenRouter</div>
+  <h2>One API, many models</h2>
+  <div class="bar"></div>
+  <div class="row">
+    <div class="grow">
+      <div class="flow" style="margin-bottom:30px">
+        <div class="box">One key</div><span class="arrow">→</span>
+        <div class="box hub">1 · Model</div><span class="arrow">→</span>
+        <div class="box hub">2 · Host</div>
+      </div>
+      <ul class="list">
+        <li><b>Model ≠ provider</b>: same Claude on Anthropic, Vertex, Azure, AWS</li>
+        <li>Default host: <b>price-weighted</b>, not always the cheapest</li>
+        <li>Or <b class="l">pin the list</b>, no extra fee</li>
+      </ul>
+    </div>
+    <img src="img/claude-providers.png" alt="Claude Sonnet 5.5 providers on OpenRouter: Google Vertex, Amazon Bedrock, Azure, Claude Platform on AWS, Anthropic" style="width:340px;flex:none;border-radius:16px;border:1px solid var(--line)">
+  </div>
+  <span class="num">6</span>
+</section>
+
+<!-- 7 · How OpenRouter routes -->
+<section class="slide">
+  <div class="kicker">OpenRouter</div>
+  <h2>How OpenRouter routes</h2>
+  <div class="bar"></div>
+  <style>
+    .rt { display:grid; grid-template-columns: 0.85fr 1.15fr 1.15fr; gap:22px; margin-top:26px; flex:1; min-height:0; }
+    .rt .panel { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px 22px; display:flex; flex-direction:column; }
+    .rt .cap { font-family:var(--title); font-size:14px; letter-spacing:.1em; text-transform:uppercase; color:var(--soft); margin-bottom:16px; }
+    .rt .cap b { color:var(--lime); font-weight:600; }
+    .rt .step { border:1px solid var(--line); border-radius:12px; padding:11px 14px; font-size:16px; background:#0B0D10; }
+    .rt .step small { display:block; color:var(--soft); font-size:13px; margin-top:2px; }
+    .rt .step.on { background:var(--lime); border-color:var(--lime); color:var(--bg); font-weight:600; }
+    .rt .step.on small { color:#2B3308; font-weight:400; }
+    .rt .down { text-align:center; color:var(--faint); font-size:16px; line-height:1; margin:6px 0; }
+    .rt .body { flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .rt .host { display:grid; grid-template-columns: 110px 1fr 64px; align-items:center; gap:14px; padding:18px 0; border-bottom:1px solid var(--line); font-size:18px; }
+    .rt .host:last-child { border-bottom:none; }
+    .rt .host small { display:block; color:var(--soft); font-size:13px; margin-top:2px; }
+    .rt .track { height:12px; border-radius:6px; background:#1C1F25; overflow:hidden; }
+    .rt .fill { height:100%; border-radius:6px; }
+    .rt .pill { font-size:13px; text-align:center; border:1px solid var(--line); border-radius:8px; padding:4px 0; color:var(--soft); }
+    .rt .model { border:1px solid var(--line); border-radius:14px; padding:16px 16px; background:#0B0D10; }
+    .rt .model .name { font-family:var(--mono); font-size:17px; color:var(--lime); }
+    .rt .model .name small { color:var(--soft); font-family:var(--body); font-size:13px; margin-left:6px; }
+    .rt .hosts { display:flex; align-items:center; gap:6px; margin-top:12px; font-size:14px; }
+    .rt .hosts span { flex:1; text-align:center; border:1px solid var(--line); border-radius:8px; padding:8px 0; color:var(--soft); }
+    .rt .hosts i { color:var(--lime); font-style:normal; }
+    .rt .drop { text-align:center; color:var(--soft); font-size:14px; margin:14px 0; }
+  </style>
+  <div class="rt">
+    <div class="panel">
+      <div class="cap"><b>1</b> · Two layers</div>
+      <div class="step">One key<small>openrouter.ai/api/v1</small></div>
+      <div class="down">↓</div>
+      <div class="step on">1 · Model routing<small>which model answers</small></div>
+      <div class="down">↓</div>
+      <div class="step">2 · Provider routing<small>which host serves it</small></div>
+      <div class="down">↓</div>
+      <div class="step">Response</div>
+    </div>
+    <div class="panel">
+      <div class="cap"><b>2</b> · Default host: price-weighted</div>
+      <div class="body">
+      <div class="host"><div>Host A<small class="l">$1/M · stable</small></div><div class="track"><div class="fill" style="width:100%;background:var(--lime)"></div></div><div class="pill l" style="border-color:var(--lime-edge)">1st</div></div>
+      <div class="host"><div>Host C<small>$3/M · stable</small></div><div class="track"><div class="fill" style="width:14%;background:var(--soft)"></div></div><div class="pill">next</div></div>
+      <div class="host"><div>Host B<small class="r">$2/M · outages</small></div><div class="track"><div class="fill" style="width:30%;background:var(--red)"></div></div><div class="pill r" style="border-color:var(--red-edge)">last</div></div>
+      </div>
+      <p style="color:var(--soft);font-size:14px;padding-top:14px">Weight = 1/price². Recent outages go last.</p>
+    </div>
+    <div class="panel">
+      <div class="cap"><b>3</b> · Model fallback</div>
+      <div class="body">
+      <div class="model">
+        <div class="name">gpt-6-luna<small>primary</small></div>
+        <div class="hosts"><span>Host A</span><i>→</i><span>Host B</span><i>→</i><span>Host C</span></div>
+      </div>
+      <div class="drop">┆ all hosts down</div>
+      <div class="model">
+        <div class="name">gpt-6-sol<small>fallback</small></div>
+        <div style="color:var(--soft);font-size:13px;margin-top:6px">next model in <code>models[]</code></div>
+      </div>
+      </div>
+      <p style="color:var(--soft);font-size:14px;padding-top:14px">Cheap first, flagship as backup.</p>
+    </div>
+  </div>
+  <p style="color:var(--faint);font-size:14px;margin-top:12px">Adapted from openrouter.ai/blog/insights/model-routing</p>
+  <span class="num">7</span>
+</section>
+
+<!-- 8 · Explore ≠ decide -->
+<section class="slide">
+  <div class="kicker">Explore ≠ decide</div>
+  <h2>Two different jobs</h2>
+  <div class="bar"></div>
+  <div class="row" style="gap:26px;margin-top:22px;align-items:center">
+    <div style="flex:none;width:700px">
+      <img src="img/chat-side-by-side.png" alt="Grok, GPT, Gemini and Claude side by side answering the fake smart_merge() question" style="width:100%;border-radius:14px;border:1px solid var(--line)">
+      <p style="color:var(--soft);font-size:16px;margin-top:10px">Fake API <code>smart_merge()</code>: all 4 caught it (with web search) · $0.024 – $0.057 each</p>
+    </div>
+    <div class="grow" style="display:flex;flex-direction:column;gap:16px">
+      <div class="card" style="padding:18px 22px">
+        <div class="head" style="font-size:16px">Chat / Fusion</div>
+        <ul class="list">
+          <li style="font-size:18px;padding:8px 0">Compare once, by eye</li>
+          <li style="font-size:18px;padding:8px 0">A judge blends answers</li>
+          <li style="font-size:18px;padding:8px 0">To <b>explore</b></li>
+        </ul>
+      </div>
+      <div class="card lime" style="padding:18px 22px">
+        <div class="head l" style="font-size:16px">Our pipeline</div>
+        <ul class="list">
+          <li style="font-size:18px;padding:8px 0">Measure and repeat</li>
+          <li style="font-size:18px;padding:8px 0">Objective checks</li>
+          <li style="font-size:18px;padding:8px 0" class="l">To <b>decide</b></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="num">8</span>
+</section>
+
+<!-- 9 · Architecture -->
+<section class="slide">
+  <div class="kicker">Architecture</div>
+  <h2>We didn't reinvent anything</h2>
+  <div class="bar"></div>
+  <p class="note" style="margin-top:18px"><b class="l">OpenRouter</b> access · <b class="l">promptfoo</b> evaluation · <b class="l">our code</b> the domain only</p>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:0">
+    <img src="img/paper-radar-flow.png" alt="Paper Radar data and evaluation flow" style="max-width:100%;max-height:100%;object-fit:contain">
+  </div>
+  <span class="num">9</span>
+</section>
+
+<!-- 10 · The 3 tasks -->
+<section class="slide">
+  <div class="kicker">What we measure</div>
+  <h2>Three questions for every model</h2>
+  <div class="bar"></div>
+  <div class="body">
+    <div class="cards c3">
+      <div class="card"><span class="tag">pick</span><h3>Good judgment?</h3><p>Known answer + a famous distractor</p></div>
+      <div class="card"><span class="tag">trap</span><h3>Admits it doesn't know?</h3><p>A paper that doesn't exist</p></div>
+      <div class="card"><span class="tag">tools</span><h3>Ready for agents?</h3><p>Right tool, valid args, no invented data</p></div>
+    </div>
+  </div>
+  <span class="num">10</span>
+</section>
+
+<!-- 11 · Golden dataset -->
+<section class="slide">
+  <div class="kicker">Golden dataset</div>
+  <h2>14 recent papers + 6 planted</h2>
+  <div class="bar"></div>
+  <div class="body">
+    <div class="cards c2">
+      <div class="card lime"><div class="head l">✓ Expected</div><p style="font-size:21px;color:var(--text)">RouteLLM · FrugalGPT · LLM-as-a-Judge</p></div>
+      <div class="card red"><div class="head r">◎ Distractor, first in the list</div><p style="font-size:21px;color:var(--text)">Attention Is All You Need</p></div>
+    </div>
+    <p class="note"><i>Lost in the Middle</i> sits in the middle, on purpose.</p>
+    <div class="quote" style="margin-top:30px">The right answer is set <b>by a person, not a model</b>.</div>
+  </div>
+  <span class="num">11</span>
+</section>
+
+<!-- 12 · Live demo -->
+<section class="slide">
+  <div class="kicker">Live</div>
+  <h2>Demo</h2>
+  <div class="bar"></div>
+  <div class="body">
+    <div class="timeline t4">
+      <div class="tstep"><div class="dot">1</div><h3>Run</h3><p>3 tasks × 4 models × 3<br><code>eval --repeat 3</code></p></div>
+      <div class="tstep"><div class="dot">2</div><h3>Summary</h3><p>Pass rate per task<br><code>consensus</code></p></div>
+      <div class="tstep"><div class="dot">3</div><h3>Inspect</h3><p>Open a failure<br><code>view</code></p></div>
+      <div class="tstep"><div class="dot">4</div><h3>Swap</h3><p>New model =<br>one line</p></div>
+    </div>
+  </div>
+  <span class="num">12</span>
+</section>
+
+<!-- 13 · Results -->
+<section class="slide">
+  <div class="kicker">Results · flagship models</div>
+  <h2>Same quality, 5× price gap</h2>
+  <div class="bar"></div>
+  <div class="row">
+    <div class="grow" style="flex:1.3">
+      <table>
+        <tr><th>Model</th><th>pick</th><th>trap</th><th>tools</th><th>Cost · 9 calls</th></tr>
+        <tr><td>Claude Sonnet 5.5</td><td class="l">3/3</td><td class="l">3/3</td><td class="l">3/3</td><td>$0.079</td></tr>
+        <tr><td>GPT-6 Sol</td><td class="l">3/3</td><td class="l">3/3</td><td class="l">3/3</td><td class="l">$0.016</td></tr>
+        <tr><td>Gemini 3.8 Flash</td><td class="l">3/3</td><td class="l">3/3</td><td class="l">3/3</td><td>$0.038</td></tr>
+        <tr><td>Grok 4.7</td><td class="l">3/3</td><td class="l">3/3</td><td class="l">3/3</td><td>$0.052</td></tr>
+      </table>
+    </div>
+    <div class="grow" style="flex:.7">
+      <ul class="keys" style="gap:20px">
+        <li style="font-size:20px"><span class="n">1</span><span>Quality ties: <b>price decides</b></span></li>
+        <li style="font-size:20px"><span class="n">2</span><span>Same list price, 5× the bill: tokenizer + cache</span></li>
+        <li style="font-size:20px"><span class="n">3</span><span>"Flash" wasn't cheapest: reasoning tokens</span></li>
+      </ul>
+    </div>
+  </div>
+  <span class="num">13</span>
+</section>
+
+<!-- 14 · Results, cheap tier -->
+<section class="slide">
+  <div class="kicker">Results · cheapest model per vendor</div>
+  <h2>Cheaper isn't always enough</h2>
+  <div class="bar"></div>
+  <div class="row">
+    <div class="grow" style="flex:1.3">
+      <table>
+        <tr><th>Model</th><th>pick</th><th>trap</th><th>tools</th><th>Cost · 9 calls</th><th style="text-align:left">Why it failed</th></tr>
+        <tr><td><b class="l">GPT-6 Luna</b></td><td class="l">3/3</td><td class="l">3/3</td><td class="l">3/3</td><td class="l">$0.0015</td><td style="text-align:left;color:var(--soft)">—</td></tr>
+        <tr><td>Claude Haiku 4.5</td><td>2/3</td><td class="l">3/3</td><td class="l">3/3</td><td>$0.029</td><td style="text-align:left;color:var(--soft)">4 picks, asked for 3</td></tr>
+        <tr><td>Grok 4.3</td><td>2/3</td><td class="l">3/3</td><td class="l">3/3</td><td>$0.020</td><td style="text-align:left;color:var(--soft)">Copied the [brackets]</td></tr>
+        <tr><td>Gemini 3.5 Flash-Lite</td><td class="r">0/3</td><td class="l">3/3</td><td class="l">3/3</td><td>$0.007</td><td style="text-align:left;color:var(--soft)">Corrupted IDs <code>v1v1</code></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="quote" style="margin-top:6px">GPT-6 Luna matches the flagships at <b>1/50 of Sonnet's cost</b>.</div>
+  <span class="num">14</span>
+</section>
+
+<!-- 15 · Governance as code -->
+<section class="slide">
+  <div class="kicker">Governance</div>
+  <h2>Two layers of control</h2>
+  <div class="bar"></div>
+  <div class="row" style="gap:30px;align-items:center;margin-top:18px">
+    <div class="grow">
+      <div class="terminal" style="margin-bottom:18px;font-size:15px;padding:12px 20px">
+        <span class="prompt">$</span> uv run paper-radar eval &nbsp;→&nbsp;
+        <span class="r">Blocked:</span> vendor 'deepseek' is not allowed
+      </div>
+      <div class="cards c2">
+        <div class="card" style="padding:20px 22px">
+          <div class="head">In our code</div>
+          <ul class="list">
+            <li style="font-size:18px;padding:10px 0">Blocks before any call</li>
+            <li style="font-size:18px;padding:10px 0">Versioned and tested</li>
+            <li style="font-size:18px;padding:10px 0">Reviewed in a PR</li>
+          </ul>
+        </div>
+        <div class="card lime" style="padding:20px 22px">
+          <div class="head l">OpenRouter Guardrail</div>
+          <ul class="list">
+            <li style="font-size:18px;padding:10px 0">Enforced on the key</li>
+            <li style="font-size:18px;padding:10px 0">Budget · allowed models</li>
+            <li style="font-size:18px;padding:10px 0">Can't be bypassed</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note" style="margin-top:24px">Code <b>declares</b> the policy. The platform <b>enforces</b> it.</p>
+    </div>
+    <img src="img/guardrail.png" alt="OpenRouter Guardrail 'Approved models only': key paper-radar, $5 daily limit, 8 allowed models" style="height:470px;flex:none;border-radius:14px;border:1px solid var(--line)">
+  </div>
+  <span class="num">15</span>
+</section>
+
+<!-- 16 · What this is NOT -->
+<section class="slide">
+  <div class="kicker">Honest limits</div>
+  <h2>What this is not</h2>
+  <div class="bar"></div>
+  <div class="body">
+    <div class="cards c2">
+      <div class="card red">
+        <ul class="list">
+          <li><b>Not a benchmark</b>: a directional signal</li>
+          <li>Classics are in training data</li>
+        </ul>
+      </div>
+      <div class="card red">
+        <ul class="list">
+          <li><b>No</b> internal or customer data</li>
+          <li><b>Testing only</b>, never production</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">To decide for real: <b>20–50 cases per task</b></p>
+    <p class="note" style="margin-top:12px">The output is a <b style="color:var(--lime)">decision</b>: which model to request through the approved channel</p>
+  </div>
+  <span class="num">16</span>
+</section>
+
+<!-- 17 · Next step -->
+<section class="slide">
+  <div class="kicker">Next step</div>
+  <h2>A playbook any team can reuse</h2>
+  <div class="bar"></div>
+  <div class="body">
+    <div class="timeline t5">
+      <div class="tstep"><div class="dot">1</div><h3>Task</h3><p>What the model must do</p></div>
+      <div class="tstep"><div class="dot">2</div><h3>Golden set</h3><p>20–50 cases, approved by a person</p></div>
+      <div class="tstep"><div class="dot">3</div><h3>Checks</h3><p>Objective asserts</p></div>
+      <div class="tstep"><div class="dot">4</div><h3>Run</h3><p>Tasks × models × repeats</p></div>
+      <div class="tstep"><div class="dot">5</div><h3>Decide</h3><p>With a rule set upfront</p></div>
+    </div>
+    <p class="note">Then: <code>models: [luna, sol]</code> cheap first, flagship as fallback · observability · Tech Radar in Teams</p>
+  </div>
+  <span class="num">17</span>
+</section>
+
+<!-- 18 · Close -->
+<section class="slide">
+  <div class="kicker">Takeaway</div>
+  <h2>Measure before you decide</h2>
+  <div class="bar"></div>
+  <div class="row">
+    <div class="grow">
+      <div class="quote">OpenRouter doesn't decide for us.<br>It lets us <b>measure</b>.</div>
+      <p class="lead" style="margin-top:26px">Test with <b class="l">your</b> task, <b class="l">your</b> data, <b class="l">your</b> price.</p>
+      <p style="font-family:var(--title);font-size:40px;margin-top:48px">Questions?</p>
+    </div>
+    <img src="img/team-discussion-green.png" alt="Team discussing around a table" style="width:520px;flex:none">
+  </div>
+  <p style="color:var(--faint);font-size:15px">RouteLLM · FrugalGPT · LLM-as-a-Judge · Lost in the Middle · openrouter.ai · promptfoo.dev</p>
+  <span class="num">18</span>
+</section>
+
+<!-- 19 · Appendix: routing modes -->
+<section class="slide">
+  <div class="kicker">Appendix · Q&amp;A</div>
+  <h2>Which routing mode fits which job</h2>
+  <div class="bar"></div>
+  <div class="body">
+    <table>
+      <tr><th>Job</th><th style="text-align:left">Mode</th></tr>
+      <tr><td>Cheapest reliable option</td><td style="text-align:left">Default: weight 1/price², unstable hosts last</td></tr>
+      <tr><td class="l"><b>Must hit specific hosts</b></td><td style="text-align:left" class="l"><code>order</code> + <code>allow_fallbacks: false</code> &nbsp;← our config</td></tr>
+      <tr><td>Latency-sensitive</td><td style="text-align:left"><code>:nitro</code></td></tr>
+      <tr><td>Cost-capped batch</td><td style="text-align:left"><code>:floor</code> or <code>max_price</code></td></tr>
+      <tr><td>Survive a model outage</td><td style="text-align:left"><code>models</code> fallback array</td></tr>
+      <tr><td>Unknown prompt types</td><td style="text-align:left"><code>openrouter/auto</code>: picks by market spend, not by our evidence</td></tr>
+    </table>
+    <p style="color:var(--faint);font-size:15px;margin-top:18px">Source: openrouter.ai/blog/insights/model-routing</p>
+  </div>
+  <span class="num">19</span>
+</section>
+
+<!-- 20 · Appendix: our routing -->
+<section class="slide">
+  <div class="kicker">Appendix · Q&amp;A</div>
+  <h2>Our routing, end to end</h2>
+  <div class="bar"></div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;margin-top:22px;min-height:0">
+    <img src="img/openrouter-flow.png" alt="OpenRouter request flow: key, guardrail, router, pinned hosts with fallback, usage and cost" style="max-width:100%;max-height:100%;object-fit:contain">
+  </div>
+  <span class="num">20</span>
+</section>
+
+</body>
+</html>
