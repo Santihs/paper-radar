@@ -9,3 +9,9 @@ __pycache__/
 .agents/
 .claude/skills/
 skills-lock.json
+
+# presentation assets kept local: images, rendered PDF, speaker script
+img/
+docs/slides/img/
+docs/slides/*.pdf
+docs/demo-script.md

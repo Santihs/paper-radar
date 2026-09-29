@@ -112,3 +112,29 @@ def test_consensus_reads_latest_run_or_the_one_asked_for(
     assert cli.main(["consensus", "--run", "20260928-230000"]) == 0
     assert "20260928-230000" in shown[1]
     assert cli.main(["consensus", "--run", "missing"]) == 1
+
+
+def test_eval_config_flag_is_gated_and_snapshotted(
+    promptfoo_calls: list[list[str]], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tests_file = tmp_path / "tests.json"
+    tests_file.write_text("[]")
+    monkeypatch.setattr(config, "TESTS_FILE", tests_file)
+    monkeypatch.setattr(config, "RUNS_DIR", tmp_path / "runs")
+    other = tmp_path / "promptfooconfig.other.yaml"
+
+    other.write_text("providers:\n  - openrouter:deepseek/deepseek-v4\n")
+    assert cli.main(["eval", "--config", str(other)]) == 1  # the gate checks this config
+    assert promptfoo_calls == []
+
+    other.write_text(config.PROMPTFOO_CONFIG.read_text(encoding="utf-8"))
+    assert cli.main(["eval", "--config", str(other)]) == 0
+    [args] = promptfoo_calls
+    assert args[args.index("-c") + 1] == str(other)
+    [run] = (tmp_path / "runs").iterdir()
+    assert (run / other.name).is_file()
+
+
+def test_eval_missing_config(promptfoo_calls: list[list[str]], tmp_path: Path) -> None:
+    assert cli.main(["eval", "--config", str(tmp_path / "nope.yaml")]) == 1
+    assert promptfoo_calls == []

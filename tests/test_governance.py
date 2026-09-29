@@ -1,30 +1,48 @@
-"""Governance as a test: the real promptfooconfig.yaml must follow policy."""
+"""Governance as a test: every promptfoo config in the repo must follow policy."""
 
+from pathlib import Path
 from typing import Any
 
 import pytest
 
-from paper_radar.config import PROMPTFOO_CONFIG
+from paper_radar.config import PROMPTFOO_CONFIG, ROOT
 from paper_radar.governance import find_violations, load_config
 
+CONFIGS = sorted(ROOT.glob("promptfooconfig*.yaml"))
+MAKER_HOST = {
+    "anthropic": "anthropic",
+    "openai": "openai",
+    "google": "google-ai-studio",
+    "x-ai": "xai",
+}
 
-def test_repo_config_complies_with_policy() -> None:
-    config = load_config(PROMPTFOO_CONFIG)
+
+def test_both_configs_are_checked() -> None:
+    assert {c.name for c in CONFIGS} >= {"promptfooconfig.yaml", "promptfooconfig.cheap.yaml"}
+
+
+@pytest.mark.parametrize("path", CONFIGS, ids=lambda p: p.name)
+def test_repo_config_complies_with_policy(path: Path) -> None:
+    config = load_config(path)
     assert config["providers"]
     assert find_violations(config) == []
 
 
-def test_repo_config_starts_with_the_model_maker() -> None:
-    first_host = {
-        p["id"]: p["config"]["provider"]["order"][0]
-        for p in load_config(PROMPTFOO_CONFIG)["providers"]
-    }
-    assert first_host == {
-        "openrouter:anthropic/claude-sonnet-5.5": "anthropic",
-        "openrouter:openai/gpt-6-sol": "openai",
-        "openrouter:google/gemini-3.8-flash": "google-ai-studio",
-        "openrouter:x-ai/grok-4.7": "xai",
-    }
+@pytest.mark.parametrize("path", CONFIGS, ids=lambda p: p.name)
+def test_repo_config_starts_with_the_model_maker(path: Path) -> None:
+    for p in load_config(path)["providers"]:
+        vendor = p["id"].removeprefix("openrouter:").split("/")[0]
+        assert p["config"]["provider"]["order"][0] == MAKER_HOST[vendor], p["id"]
+
+
+def test_demo_config_models() -> None:
+    ids = [p["id"] for p in load_config(PROMPTFOO_CONFIG)["providers"]]
+    assert ids == [
+        "openrouter:anthropic/claude-sonnet-5.5",
+        "openrouter:openai/gpt-6-sol",
+        "openrouter:google/gemini-3.8-flash",
+        "openrouter:x-ai/grok-4.7",
+    ]
 
 
 def provider(pid: str, **routing: Any) -> dict[str, Any]:
@@ -72,25 +90,26 @@ def test_compliant_provider_passes() -> None:
     assert find_violations({"providers": [compliant]}) == []
 
 
-def test_prompts_with_config_are_not_txt() -> None:
+@pytest.mark.parametrize("path", CONFIGS, ids=lambda p: p.name)
+def test_prompts_with_config_are_not_txt(path: Path) -> None:
     # promptfoo 0.123.1 silently drops prompt-level config (tools, response_format) for .txt
-    prompts = load_config(PROMPTFOO_CONFIG)["prompts"]
+    prompts = load_config(path)["prompts"]
     with_config = [p["id"] for p in prompts if isinstance(p, dict) and p.get("config")]
     assert with_config
     assert not [pid for pid in with_config if pid.endswith(".txt")]
 
 
-def test_gpt_never_sends_temperature() -> None:
-    # GPT-6 Sol endpoints reject temperature; with require_parameters that is a 404
-    [gpt] = [
-        p["config"]
-        for p in load_config(PROMPTFOO_CONFIG)["providers"]
-        if p["id"] == "openrouter:openai/gpt-6-sol"
-    ]
-    assert "temperature" not in gpt
-    assert gpt["omitDefaults"] is True
+@pytest.mark.parametrize("path", CONFIGS, ids=lambda p: p.name)
+def test_gpt_never_sends_temperature(path: Path) -> None:
+    # GPT-6 endpoints reject temperature; with require_parameters that is a 404
+    gpts = [p["config"] for p in load_config(path)["providers"] if "/gpt-6" in p["id"]]
+    assert gpts
+    for gpt in gpts:
+        assert "temperature" not in gpt
+        assert gpt["omitDefaults"] is True
 
 
-def test_every_model_is_attributed_to_paper_radar() -> None:
-    providers = load_config(PROMPTFOO_CONFIG)["providers"]
+@pytest.mark.parametrize("path", CONFIGS, ids=lambda p: p.name)
+def test_every_model_is_attributed_to_paper_radar(path: Path) -> None:
+    providers = load_config(path)["providers"]
     assert all(p["config"]["headers"]["X-Title"] == "paper-radar" for p in providers)

@@ -38,6 +38,15 @@ Each eval gets its own folder, `data/runs/<YYYYMMDD-HHMMSS>/`, with `eval.json`,
 `consensus` reads the latest run; `consensus --run <name>` reads an older one.
 Swap a model: edit one `id` in `promptfooconfig.yaml`. No code changes.
 
+A second config tries the cheapest model of each vendor on the same tasks, routing and policy:
+
+```sh
+uv run paper-radar eval --config promptfooconfig.cheap.yaml --repeat 3 --no-cache
+```
+
+The governance gate checks whichever config runs, and every `promptfooconfig*.yaml` in the repo is
+covered by `tests/test_governance.py`.
+
 This is a directional signal, not a benchmark: 3 tasks, few cases. The planted classics are in
 the models' training data, so `pick` measures judgment, not comprehension of new work.
 

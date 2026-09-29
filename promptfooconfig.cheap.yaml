@@ -1,0 +1,98 @@
+# Cheap-tier experiment: same prompts, tests, routing and governance as promptfooconfig.yaml,
+# only the models change. Run: uv run paper-radar eval --config promptfooconfig.cheap.yaml
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: Paper Radar - cheap tier. Same 3 tasks, the cheapest model of each vendor
+
+# One prompt per task. Prompt-level config overrides provider config, so only
+# `pick` forces structured JSON and only `tools` exposes tool definitions.
+# Prompts are .j2 on purpose: promptfoo 0.123.1 drops prompt-level config for .txt files.
+prompts:
+  - id: file://prompts/pick.j2
+    label: pick
+    config:
+      response_format: file://prompts/answer_schema.json
+  - id: file://prompts/trap.j2
+    label: trap
+  - id: file://prompts/tools.j2
+    label: tools
+    config:
+      tools: file://prompts/tools.json
+      tool_choice: auto
+
+# Swapping a model = editing one `id` line. Governance rules live in
+# src/paper_radar/governance.py and are enforced before every eval.
+#
+# Routing per model (provider): hosts pinned in `order`, model maker first, then the
+# big clouds that serve it on OpenRouter. allow_fallbacks: false = never leave this list.
+#   data_collection: deny     -> skip endpoints that store or train on prompts
+#   require_parameters: true  -> skip endpoints that ignore response_format / tools
+#                                (e.g. Bedrock has no structured output, so `pick` skips it)
+providers:
+  - id: openrouter:anthropic/claude-haiku-4.5
+    label: claude-haiku-4.5
+    config:
+      temperature: 0
+      max_tokens: 4000
+      showThinking: false  # grade the answer, not the reasoning trace
+      headers:  # app attribution: shows as "paper-radar" in OpenRouter Activity
+        HTTP-Referer: http://localhost/paper-radar
+        X-Title: paper-radar
+      provider:
+        order: [anthropic, google-vertex, azure]
+        allow_fallbacks: false
+        data_collection: deny
+        require_parameters: true
+  - id: openrouter:openai/gpt-6-luna
+    label: gpt-6-luna
+    config:
+      # No temperature: GPT-6 Luna endpoints reject it and require_parameters would drop them all.
+      # omitDefaults stops promptfoo from injecting its default temperature: 0.
+      omitDefaults: true
+      max_tokens: 4000
+      showThinking: false  # grade the answer, not the reasoning trace
+      headers:  # app attribution: shows as "paper-radar" in OpenRouter Activity
+        HTTP-Referer: http://localhost/paper-radar
+        X-Title: paper-radar
+      provider:
+        order: [openai, azure, amazon-bedrock]  # not served on Vertex
+        allow_fallbacks: false
+        data_collection: deny
+        require_parameters: true
+  - id: openrouter:google/gemini-3.5-flash-lite
+    label: gemini-3.5-flash-lite
+    config:
+      temperature: 0
+      max_tokens: 4000
+      showThinking: false  # grade the answer, not the reasoning trace
+      headers:  # app attribution: shows as "paper-radar" in OpenRouter Activity
+        HTTP-Referer: http://localhost/paper-radar
+        X-Title: paper-radar
+      provider:
+        order: [google-ai-studio, google-vertex]  # Vertex rejects temperature, AI Studio serves it
+        allow_fallbacks: false
+        data_collection: deny
+        require_parameters: true
+  - id: openrouter:x-ai/grok-4.3
+    label: grok-4.3
+    config:
+      temperature: 0
+      max_tokens: 4000
+      showThinking: false  # grade the answer, not the reasoning trace
+      headers:  # app attribution: shows as "paper-radar" in OpenRouter Activity
+        HTTP-Referer: http://localhost/paper-radar
+        X-Title: paper-radar
+      provider:
+        order: [xai]  # xAI only (has a zero-data-retention endpoint)
+        allow_fallbacks: false
+        data_collection: deny
+        require_parameters: true
+
+# Task-specific asserts come with each test case (see src/paper_radar/dataset.py).
+defaultTest:
+  assert:
+    - type: cost
+      threshold: 0.05
+    - type: latency
+      threshold: 60000
+
+tests: file://data/tests.json

@@ -57,7 +57,12 @@ def cmd_fetch(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
-    violations = find_violations(load_config(config.PROMPTFOO_CONFIG))
+    promptfoo_config = Path(args.config).resolve() if args.config else config.PROMPTFOO_CONFIG
+    if not promptfoo_config.is_file():
+        console.print(f"[red]Config not found: {promptfoo_config}[/]")
+        return 1
+    # The gate checks the config that will actually run, whichever it is.
+    violations = find_violations(load_config(promptfoo_config))
     if violations:
         for v in violations:
             console.print(f"[bold red]Blocked:[/] {v.provider}: {v.reason}")
@@ -67,10 +72,10 @@ def cmd_eval(args: argparse.Namespace) -> int:
         return 1
     run = new_run_dir(config.RUNS_DIR)
     # Snapshot the exact config, so every result can be traced to the models that produced it.
-    shutil.copy2(config.PROMPTFOO_CONFIG, run / config.PROMPTFOO_CONFIG.name)
+    shutil.copy2(promptfoo_config, run / promptfoo_config.name)
     # JSON feeds `consensus`; CSV opens in Excel for whoever makes the decision.
     outputs = [str(run / config.EVAL_JSON), str(run / config.EVAL_CSV)]
-    cli_args = ["-c", str(config.PROMPTFOO_CONFIG), "-o", *outputs]
+    cli_args = ["-c", str(promptfoo_config), "-o", *outputs]
     code = _promptfoo(["eval", *cli_args, "--no-share", *args.extra])
     console.print(f"Run saved in [bold]{run}[/]")
     return code
@@ -134,10 +139,12 @@ def build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("--max-results", type=int, default=config.RECENT_COUNT, help="recent papers")
     fetch.set_defaults(func=cmd_fetch)
 
-    for name, func in (("eval", cmd_eval), ("view", cmd_view)):
-        sub.add_parser(name, help=f"promptfoo {name} (extra flags pass through)").set_defaults(
-            func=func
-        )
+    eval_ = sub.add_parser("eval", help="promptfoo eval (extra flags pass through)")
+    eval_.add_argument("--config", help="promptfoo config to run (default: promptfooconfig.yaml)")
+    eval_.set_defaults(func=cmd_eval)
+    sub.add_parser("view", help="promptfoo view (extra flags pass through)").set_defaults(
+        func=cmd_view
+    )
 
     consensus = sub.add_parser("consensus", help="cross-model agreement (latest run)")
     consensus.add_argument("--run", help="run folder name under data/runs (default: latest)")
