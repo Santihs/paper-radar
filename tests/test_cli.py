@@ -1,4 +1,6 @@
+import urllib.error
 from collections.abc import Sequence
+from email.message import Message
 from pathlib import Path
 
 import pytest
@@ -56,9 +58,23 @@ def test_consensus_without_eval_is_friendly(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(config, "EVAL_OUTPUT_FILE", tmp_path / "missing.json")
-    assert cli.main(["consensus"]) == 1
 
 
 def test_unknown_flags_rejected_outside_passthrough_commands() -> None:
     with pytest.raises(SystemExit):
         cli.main(["consensus", "--bogus"])
+
+
+def test_fetch_rate_limited_keeps_existing_dataset(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tests_file = tmp_path / "tests.json"
+    tests_file.write_text("[]")
+    monkeypatch.setattr(config, "TESTS_FILE", tests_file)
+
+    def rate_limited(*_: object, **__: object) -> None:
+        raise urllib.error.HTTPError("https://export.arxiv.org", 429, "Rate", Message(), None)
+
+    monkeypatch.setattr(cli, "fetch_papers", rate_limited)
+    assert cli.main(["fetch"]) == 1
+    assert tests_file.read_text() == "[]"

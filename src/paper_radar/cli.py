@@ -12,6 +12,8 @@ import os
 import shutil
 import subprocess
 import sys
+import time
+import urllib.error
 from collections.abc import Sequence
 
 import truststore
@@ -31,9 +33,17 @@ _PASSTHROUGH_COMMANDS = frozenset({"eval", "view"})
 
 
 def cmd_fetch(args: argparse.Namespace) -> int:
-    with console.status("Fetching recent papers and planted classics from arXiv..."):
-        recent = fetch_papers(config.ARXIV_CATEGORIES, max_results=args.max_results)
-        classics = fetch_by_ids([p.arxiv_id for p in config.PLANTED])
+    try:
+        with console.status("Fetching recent papers and planted classics from arXiv..."):
+            recent = fetch_papers(config.ARXIV_CATEGORIES, max_results=args.max_results)
+            time.sleep(3)  # arXiv asks for >= 3 s between API calls
+            classics = fetch_by_ids([p.arxiv_id for p in config.PLANTED])
+    except urllib.error.HTTPError as err:
+        kept = "existing dataset kept" if config.TESTS_FILE.exists() else "no dataset yet"
+        console.print(
+            f"[red]arXiv answered HTTP {err.code}[/] ({kept}). Try again in a few minutes."
+        )
+        return 1
     papers = assemble(recent, classics)
     save_dataset(papers, build_tests(papers), config.PAPERS_FILE, config.TESTS_FILE)
     console.print(

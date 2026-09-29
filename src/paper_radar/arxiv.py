@@ -1,5 +1,7 @@
 """Fetch the latest papers from the public arXiv API."""
 
+import time
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from collections.abc import Sequence
@@ -9,6 +11,10 @@ from paper_radar.schemas import Paper
 
 ARXIV_API = "https://export.arxiv.org/api/query"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
+# arXiv API etiquette: identify the client and wait >= 3 s between calls.
+USER_AGENT = "paper-radar/0.1 (public-research demo)"
+_RETRY_STATUS = frozenset({429, 503})
+_RETRY_DELAYS = (10.0, 20.0, 40.0)
 
 
 def build_url(categories: Sequence[str], max_results: int) -> str:
@@ -52,6 +58,16 @@ def fetch_by_ids(ids: Sequence[str]) -> list[Paper]:
     return _fetch(build_ids_url(ids))
 
 
-def _fetch(url: str) -> list[Paper]:
-    with urllib.request.urlopen(url, timeout=30) as resp:
-        return parse_feed(resp.read())
+def _fetch(url: str, delays: Sequence[float] = _RETRY_DELAYS) -> list[Paper]:
+    """GET the feed, backing off on arXiv rate limits (429/503)."""
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    for attempt in range(len(delays) + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as resp:
+                return parse_feed(resp.read())
+        except urllib.error.HTTPError as err:
+            if err.code not in _RETRY_STATUS or attempt == len(delays):
+                raise
+            retry_after = err.headers.get("Retry-After", "") if err.headers else ""
+            time.sleep(float(retry_after) if retry_after.isdigit() else delays[attempt])
+    raise AssertionError("unreachable")

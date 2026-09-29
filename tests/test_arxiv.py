@@ -1,10 +1,25 @@
+import io
+import urllib.error
+import urllib.request
+from email.message import Message
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import pytest
 
-from paper_radar.arxiv import build_ids_url, build_url, fetch_by_ids, fetch_papers, parse_feed
+from paper_radar.arxiv import (
+    USER_AGENT,
+    _fetch,
+    build_ids_url,
+    build_url,
+    fetch_by_ids,
+    fetch_papers,
+    parse_feed,
+)
 from paper_radar.config import PLANTED
 from paper_radar.schemas import Paper, normalize_id
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def test_build_url_queries_categories_newest_first() -> None:
@@ -59,3 +74,41 @@ def test_fetch_papers_live() -> None:
 def test_fetch_by_ids_live() -> None:
     [paper] = fetch_by_ids(["1706.03762"])
     assert paper.title == "Attention Is All You Need"
+
+
+class _Resp(io.BytesIO):
+    def __enter__(self) -> "_Resp":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.close()
+
+
+def _rate_limited(url: str) -> urllib.error.HTTPError:
+    return urllib.error.HTTPError(url, 429, "Too Many Requests", Message(), None)
+
+
+def test_fetch_retries_on_rate_limit_then_succeeds(monkeypatch: pytest.MonkeyPatch) -> None:
+    feed = FIXTURES.joinpath("arxiv_sample.xml").read_bytes()
+    calls: list[urllib.request.Request] = []
+
+    def fake_urlopen(req: urllib.request.Request, timeout: float) -> _Resp:
+        calls.append(req)
+        if len(calls) == 1:
+            raise _rate_limited(req.full_url)
+        return _Resp(feed)
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    papers = _fetch("https://example.test", delays=(0,))
+    assert len(papers) == 4
+    assert len(calls) == 2
+    assert calls[0].get_header("User-agent") == USER_AGENT
+
+
+def test_fetch_gives_up_after_last_retry(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_urlopen(req: urllib.request.Request, timeout: float) -> _Resp:
+        raise _rate_limited(req.full_url)
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    with pytest.raises(urllib.error.HTTPError):
+        _fetch("https://example.test", delays=(0, 0))
