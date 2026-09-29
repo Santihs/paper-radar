@@ -33,7 +33,9 @@ uv run paper-radar view               # promptfoo web viewer (local)
 uv run paper-radar consensus          # pass rate per model x task + agreement on picks
 ```
 
-Results land in `data/eval.json` and `data/results.csv` (opens in Excel).
+Each eval gets its own folder, `data/runs/<YYYYMMDD-HHMMSS>/`, with `eval.json`,
+`results.csv` (opens in Excel) and a copy of the `promptfooconfig.yaml` that produced them.
+`consensus` reads the latest run; `consensus --run <name>` reads an older one.
 Swap a model: edit one `id` in `promptfooconfig.yaml`. No code changes.
 
 This is a directional signal, not a benchmark: 3 tasks, few cases. The planted classics are in

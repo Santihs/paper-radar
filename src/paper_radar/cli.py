@@ -1,9 +1,9 @@
 """paper-radar CLI.
 
 paper-radar fetch       latest arXiv papers -> data/ (promptfoo dataset)
-paper-radar eval        governance check, then promptfoo eval (extra args pass through)
+paper-radar eval        governance check, then promptfoo eval -> data/runs/<timestamp>/
 paper-radar view        promptfoo web viewer (local)
-paper-radar consensus   pass rate per model x task, and agreement on picks
+paper-radar consensus   pass rate per model x task for the latest run (or --run NAME)
 """
 
 import argparse
@@ -26,6 +26,7 @@ from paper_radar.consensus import load_runs
 from paper_radar.dataset import assemble, build_tests, load_papers, save_dataset
 from paper_radar.governance import find_violations, load_config
 from paper_radar.report import render
+from paper_radar.runs import latest_run, new_run_dir
 
 console = Console()
 
@@ -64,10 +65,15 @@ def cmd_eval(args: argparse.Namespace) -> int:
     if not config.TESTS_FILE.exists():
         console.print("[red]No dataset yet. Run `paper-radar fetch` first.[/]")
         return 1
+    run = new_run_dir(config.RUNS_DIR)
+    # Snapshot the exact config, so every result can be traced to the models that produced it.
+    shutil.copy2(config.PROMPTFOO_CONFIG, run / config.PROMPTFOO_CONFIG.name)
     # JSON feeds `consensus`; CSV opens in Excel for whoever makes the decision.
-    outputs = [str(config.EVAL_OUTPUT_FILE), str(config.EVAL_CSV_FILE)]
+    outputs = [str(run / config.EVAL_JSON), str(run / config.EVAL_CSV)]
     cli_args = ["-c", str(config.PROMPTFOO_CONFIG), "-o", *outputs]
-    return _promptfoo(["eval", *cli_args, "--no-share", *args.extra])
+    code = _promptfoo(["eval", *cli_args, "--no-share", *args.extra])
+    console.print(f"Run saved in [bold]{run}[/]")
+    return code
 
 
 def cmd_view(args: argparse.Namespace) -> int:
@@ -75,10 +81,12 @@ def cmd_view(args: argparse.Namespace) -> int:
 
 
 def cmd_consensus(args: argparse.Namespace) -> int:
-    if not config.EVAL_OUTPUT_FILE.exists():
+    run = config.RUNS_DIR / args.run if args.run else latest_run(config.RUNS_DIR, config.EVAL_JSON)
+    if run is None or not (run / config.EVAL_JSON).is_file():
         console.print("[red]No eval results yet. Run `paper-radar eval` first.[/]")
         return 1
-    eval_output = json.loads(config.EVAL_OUTPUT_FILE.read_text(encoding="utf-8"))
+    console.print(f"Run: [bold]{run.name}[/]")
+    eval_output = json.loads((run / config.EVAL_JSON).read_text(encoding="utf-8"))
     render(load_runs(eval_output), load_papers(config.PAPERS_FILE), console)
     return 0
 
@@ -131,7 +139,9 @@ def build_parser() -> argparse.ArgumentParser:
             func=func
         )
 
-    sub.add_parser("consensus", help="cross-model agreement").set_defaults(func=cmd_consensus)
+    consensus = sub.add_parser("consensus", help="cross-model agreement (latest run)")
+    consensus.add_argument("--run", help="run folder name under data/runs (default: latest)")
+    consensus.set_defaults(func=cmd_consensus)
     return parser
 
 

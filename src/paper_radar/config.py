@@ -9,8 +9,10 @@ ROOT: Final = Path(__file__).resolve().parents[2]
 DATA_DIR: Final = ROOT / "data"
 PAPERS_FILE: Final = DATA_DIR / "papers.json"
 TESTS_FILE: Final = DATA_DIR / "tests.json"
-EVAL_OUTPUT_FILE: Final = DATA_DIR / "eval.json"
-EVAL_CSV_FILE: Final = DATA_DIR / "results.csv"
+# Every eval gets its own timestamped folder under RUNS_DIR; nothing is overwritten.
+RUNS_DIR: Final = DATA_DIR / "runs"
+EVAL_JSON: Final = "eval.json"
+EVAL_CSV: Final = "results.csv"
 PROMPTFOO_CONFIG: Final = ROOT / "promptfooconfig.yaml"
 ENV_FILE: Final = ROOT / ".env"
 

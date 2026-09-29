@@ -1,3 +1,4 @@
+import json
 import urllib.error
 from collections.abc import Sequence
 from email.message import Message
@@ -26,13 +27,16 @@ def test_eval_passes_extra_flags_and_never_shares(
     tests_file = tmp_path / "tests.json"
     tests_file.write_text("[]")
     monkeypatch.setattr(config, "TESTS_FILE", tests_file)
+    monkeypatch.setattr(config, "RUNS_DIR", tmp_path / "runs")
 
     assert cli.main(["eval", "--no-cache"]) == 0
     [args] = promptfoo_calls
     assert args[0] == "eval"
     assert "--no-share" in args
     assert args[-1] == "--no-cache"
-    assert str(config.EVAL_CSV_FILE) in args
+    [run] = (tmp_path / "runs").iterdir()
+    assert str(run / config.EVAL_CSV) in args
+    assert (run / "promptfooconfig.yaml").is_file()  # config snapshot next to the results
 
 
 def test_eval_blocked_by_governance(
@@ -57,7 +61,8 @@ def test_eval_requires_dataset(
 def test_consensus_without_eval_is_friendly(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(config, "EVAL_OUTPUT_FILE", tmp_path / "missing.json")
+    monkeypatch.setattr(config, "RUNS_DIR", tmp_path / "runs")
+    assert cli.main(["consensus"]) == 1
 
 
 def test_unknown_flags_rejected_outside_passthrough_commands() -> None:
@@ -88,3 +93,22 @@ def test_read_env_file_parses_keys_without_quotes(tmp_path: Path) -> None:
 
 def test_read_env_file_missing_is_empty(tmp_path: Path) -> None:
     assert cli.read_env_file(tmp_path / "missing.env") == {}
+
+
+def test_consensus_reads_latest_run_or_the_one_asked_for(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, eval_output: dict[str, object]
+) -> None:
+    runs = tmp_path / "runs"
+    for name in ("20260928-230000", "20260929-010000"):
+        (runs / name).mkdir(parents=True)
+        (runs / name / config.EVAL_JSON).write_text(json.dumps(eval_output))
+    monkeypatch.setattr(config, "RUNS_DIR", runs)
+    shown: list[str] = []
+    monkeypatch.setattr(cli, "render", lambda *_: None)
+    monkeypatch.setattr(cli.console, "print", lambda msg, *_: shown.append(str(msg)))
+
+    assert cli.main(["consensus"]) == 0
+    assert "20260929-010000" in shown[0]
+    assert cli.main(["consensus", "--run", "20260928-230000"]) == 0
+    assert "20260928-230000" in shown[1]
+    assert cli.main(["consensus", "--run", "missing"]) == 1
