@@ -1,0 +1,46 @@
+[project]
+name = "paper-radar"
+version = "0.1.0"
+description = "Compare LLMs on the latest public arXiv papers via OpenRouter + promptfoo"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.8",
+    "pyyaml>=6.0",
+    "rich>=13.7",
+    "truststore>=0.9",
+]
+
+[project.scripts]
+paper-radar = "paper_radar.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.11",
+    "pytest>=8.3",
+    "ruff>=0.6",
+    "types-pyyaml>=6.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.10,<0.11"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "PTH"]
+
+[tool.mypy]
+strict = true
+files = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not live and not e2e'"
+markers = [
+    "live: hits the real arXiv API",
+    "e2e: runs promptfoo end-to-end with a fake provider (needs pnpm)",
+]

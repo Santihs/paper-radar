@@ -1,0 +1,27 @@
+{
+  "type": "json_schema",
+  "json_schema": {
+    "name": "paper_picks",
+    "strict": true,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "picks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "why": { "type": "string" }
+            },
+            "required": ["id", "why"],
+            "additionalProperties": false
+          }
+        },
+        "hype_warning": { "type": "string" }
+      },
+      "required": ["picks", "hype_warning"],
+      "additionalProperties": false
+    }
+  }
+}

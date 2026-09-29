@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/KCjoPSeNynKWvs1p+2ezWnVnUnU</id>
+  <title>arXiv Query: search_query=&amp;id_list=1706.03762,2306.05685,2210.03629,2307.03172,2406.18665,2305.05176&amp;start=0&amp;max_results=6</title>
+  <updated>2026-09-29T01:21:28Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=6&amp;id_list=1706.03762,2306.05685,2210.03629,2307.03172,2406.18665,2305.05176" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>6</opensearch:itemsPerPage>
+  <opensearch:totalResults>6</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2307.03172v3</id>
+    <title>Lost in the Middle: How Language Models Use Long Contexts</title>
+    <updated>2023-11-20T23:09:34Z</updated>
+    <link href="https://arxiv.org/abs/2307.03172v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2307.03172v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>While recent language models have the ability to take long contexts as input, relatively little is known about how well they use longer context. We analyze the performance of language models on two tasks that require identifying relevant information in their input contexts: multi-document question answering and key-value retrieval. We find that performance can degrade significantly when changing the position of relevant information, indicating that current language models do not robustly make use of information in long input contexts. In particular, we observe that performance is often highest when relevant information occurs at the beginning or end of the input context, and significantly degrades when models must access relevant information in the middle of long contexts, even for explicitly long-context models. Our analysis provides a better understanding of how language models use their input context and provides new evaluation protocols for future long-context language models.</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-07-06T17:54:11Z</published>
+    <arxiv:comment>18 pages, 16 figures. Accepted for publication in Transactions of the Association for Computational Linguistics (TACL), 2023</arxiv:comment>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Nelson F. Liu</name>
+    </author>
+    <author>
+      <name>Kevin Lin</name>
+    </author>
+    <author>
+      <name>John Hewitt</name>
+    </author>
+    <author>
+      <name>Ashwin Paranjape</name>
+    </author>
+    <author>
+      <name>Michele Bevilacqua</name>
+    </author>
+    <author>
+      <name>Fabio Petroni</name>
+    </author>
+    <author>
+      <name>Percy Liang</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2305.05176v1</id>
+    <title>FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance</title>
+    <updated>2023-05-09T05:11:02Z</updated>
+    <link href="https://arxiv.org/abs/2305.05176v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2305.05176v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>There is a rapidly growing number of large language models (LLMs) that users can query for a fee. We review the cost associated with querying popular LLM APIs, e.g. GPT-4, ChatGPT, J1-Jumbo, and find that these models have heterogeneous pricing structures, with fees that can differ by two orders of magnitude. In particular, using LLMs on large collections of queries and text can be expensive. Motivated by this, we outline and discuss three types of strategies that users can exploit to reduce the inference cost associated with using LLMs: 1) prompt adaptation, 2) LLM approximation, and 3) LLM cascade. As an example, we propose FrugalGPT, a simple yet flexible instantiation of LLM cascade which learns which combinations of LLMs to use for different queries in order to reduce cost and improve accuracy. Our experiments show that FrugalGPT can match the performance of the best individual LLM (e.g. GPT-4) with up to 98% cost reduction or improve the accuracy over GPT-4 by 4% with the same cost. The ideas and findings presented here lay a foundation for using LLMs sustainably and efficiently.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.SE" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-05-09T05:11:02Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Lingjiao Chen</name>
+    </author>
+    <author>
+      <name>Matei Zaharia</name>
+    </author>
+    <author>
+      <name>James Zou</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/1706.03762v7</id>
+    <title>Attention Is All You Need</title>
+    <updated>2023-08-02T00:41:18Z</updated>
+    <link href="https://arxiv.org/abs/1706.03762v7" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/1706.03762v7" rel="related" type="application/pdf" title="pdf"/>
+    <summary>The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data.</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2017-06-12T17:57:34Z</published>
+    <arxiv:comment>15 pages, 5 figures</arxiv:comment>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Ashish Vaswani</name>
+    </author>
+    <author>
+      <name>Noam Shazeer</name>
+    </author>
+    <author>
+      <name>Niki Parmar</name>
+    </author>
+    <author>
+      <name>Jakob Uszkoreit</name>
+    </author>
+    <author>
+      <name>Llion Jones</name>
+    </author>
+    <author>
+      <name>Aidan N. Gomez</name>
+    </author>
+    <author>
+      <name>Lukasz Kaiser</name>
+    </author>
+    <author>
+      <name>Illia Polosukhin</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2210.03629v3</id>
+    <title>ReAct: Synergizing Reasoning and Acting in Language Models</title>
+    <updated>2023-03-10T01:00:17Z</updated>
+    <link href="https://arxiv.org/abs/2210.03629v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2210.03629v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>While large language models (LLMs) have demonstrated impressive capabilities across tasks in language understanding and interactive decision making, their abilities for reasoning (e.g. chain-of-thought prompting) and acting (e.g. action plan generation) have primarily been studied as separate topics. In this paper, we explore the use of LLMs to generate both reasoning traces and task-specific actions in an interleaved manner, allowing for greater synergy between the two: reasoning traces help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with external sources, such as knowledge bases or environments, to gather additional information. We apply our approach, named ReAct, to a diverse set of language and decision making tasks and demonstrate its effectiveness over state-of-the-art baselines, as well as improved human interpretability and trustworthiness over methods without reasoning or acting components. Concretely, on question answering (HotpotQA) and fact verification (Fever), ReAct overcomes issues of hallucination and error propagation prevalent in chain-of-thought reasoning by interacting with a simple Wikipedia API, and generates human-like task-solving trajectories that are more interpretable than baselines without reasoning traces. On two interactive decision making benchmarks (ALFWorld and WebShop), ReAct outperforms imitation and reinforcement learning methods by an absolute success rate of 34% and 10% respectively, while being prompted with only one or two in-context examples. Project site with code: https://react-lm.github.io</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2022-10-06T01:00:32Z</published>
+    <arxiv:comment>v3 is the ICLR camera ready version with some typos fixed. Project site with code: https://react-lm.github.io</arxiv:comment>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Shunyu Yao</name>
+    </author>
+    <author>
+      <name>Jeffrey Zhao</name>
+    </author>
+    <author>
+      <name>Dian Yu</name>
+    </author>
+    <author>
+      <name>Nan Du</name>
+    </author>
+    <author>
+      <name>Izhak Shafran</name>
+    </author>
+    <author>
+      <name>Karthik Narasimhan</name>
+    </author>
+    <author>
+      <name>Yuan Cao</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2306.05685v4</id>
+    <title>Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</title>
+    <updated>2023-12-24T02:01:34Z</updated>
+    <link href="https://arxiv.org/abs/2306.05685v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2306.05685v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Evaluating large language model (LLM) based chat assistants is challenging due to their broad capabilities and the inadequacy of existing benchmarks in measuring human preferences. To address this, we explore using strong LLMs as judges to evaluate these models on more open-ended questions. We examine the usage and limitations of LLM-as-a-judge, including position, verbosity, and self-enhancement biases, as well as limited reasoning ability, and propose solutions to mitigate some of them. We then verify the agreement between LLM judges and human preferences by introducing two benchmarks: MT-bench, a multi-turn question set; and Chatbot Arena, a crowdsourced battle platform. Our results reveal that strong LLM judges like GPT-4 can match both controlled and crowdsourced human preferences well, achieving over 80% agreement, the same level of agreement between humans. Hence, LLM-as-a-judge is a scalable and explainable way to approximate human preferences, which are otherwise very expensive to obtain. Additionally, we show our benchmark and traditional benchmarks complement each other by evaluating several variants of LLaMA and Vicuna. The MT-bench questions, 3K expert votes, and 30K conversations with human preferences are publicly available at https://github.com/lm-sys/FastChat/tree/main/fastchat/llm_judge.</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-06-09T05:55:52Z</published>
+    <arxiv:comment>NeurIPS 2023 Datasets and Benchmarks Track</arxiv:comment>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Lianmin Zheng</name>
+    </author>
+    <author>
+      <name>Wei-Lin Chiang</name>
+    </author>
+    <author>
+      <name>Ying Sheng</name>
+    </author>
+    <author>
+      <name>Siyuan Zhuang</name>
+    </author>
+    <author>
+      <name>Zhanghao Wu</name>
+    </author>
+    <author>
+      <name>Yonghao Zhuang</name>
+    </author>
+    <author>
+      <name>Zi Lin</name>
+    </author>
+    <author>
+      <name>Zhuohan Li</name>
+    </author>
+    <author>
+      <name>Dacheng Li</name>
+    </author>
+    <author>
+      <name>Eric P. Xing</name>
+    </author>
+    <author>
+      <name>Hao Zhang</name>
+    </author>
+    <author>
+      <name>Joseph E. Gonzalez</name>
+    </author>
+    <author>
+      <name>Ion Stoica</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2406.18665v4</id>
+    <title>RouteLLM: Learning to Route LLMs with Preference Data</title>
+    <updated>2025-02-23T08:50:33Z</updated>
+    <link href="https://arxiv.org/abs/2406.18665v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2406.18665v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Large language models (LLMs) exhibit impressive capabilities across a wide range of tasks, yet the choice of which model to use often involves a trade-off between performance and cost. More powerful models, though effective, come with higher expenses, while less capable models are more cost-effective. To address this dilemma, we propose several efficient router models that dynamically select between a stronger and a weaker LLM during inference, aiming to optimize the balance between cost and response quality. We develop a training framework for these routers leveraging human preference data and data augmentation techniques to enhance performance. Our evaluation on widely-recognized benchmarks shows that our approach significantly reduces costs-by over 2 times in certain cases-without compromising the quality of responses. Interestingly, our router models also demonstrate significant transfer learning capabilities, maintaining their performance even when the strong and weak models are changed at test time. This highlights the potential of these routers to provide a cost-effective yet high-performance solution for deploying LLMs.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-06-26T18:10:22Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Isaac Ong</name>
+    </author>
+    <author>
+      <name>Amjad Almahairi</name>
+    </author>
+    <author>
+      <name>Vincent Wu</name>
+    </author>
+    <author>
+      <name>Wei-Lin Chiang</name>
+    </author>
+    <author>
+      <name>Tianhao Wu</name>
+    </author>
+    <author>
+      <name>Joseph E. Gonzalez</name>
+    </author>
+    <author>
+      <name>M Waleed Kadous</name>
+    </author>
+    <author>
+      <name>Ion Stoica</name>
+    </author>
+  </entry>
+</feed>

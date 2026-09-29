@@ -1,0 +1,23 @@
+# Same eval as promptfooconfig.yaml, with offline fake providers. Used by tests/test_e2e.py,
+# which writes tests.fake.json next to this file before running promptfoo.
+description: Paper Radar offline e2e
+
+prompts:
+  - id: file://../../prompts/pick.txt
+    label: pick
+  - id: file://../../prompts/trap.txt
+    label: trap
+  - id: file://../../prompts/tools.txt
+    label: tools
+
+providers:
+  - id: file://fake_provider.py
+    label: fake-honest
+    config:
+      mode: honest
+  - id: file://fake_provider.py
+    label: fake-hallucinating
+    config:
+      mode: hallucinating
+
+tests: file://tests.fake.json

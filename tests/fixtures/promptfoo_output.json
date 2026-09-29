@@ -1,0 +1,184 @@
+{
+  "evalId": "eval-yX2-2026-09-29T01:21:57",
+  "results": {
+    "results": [
+      {
+        "provider": {
+          "id": "file://fake_provider.py",
+          "label": "fake-hallucinating"
+        },
+        "vars": {
+          "task": "pick"
+        },
+        "response": {
+          "output": {
+            "picks": [
+              {
+                "id": "1706.03762",
+                "why": "relevant"
+              },
+              {
+                "id": "2609.31619v1",
+                "why": "relevant"
+              },
+              {
+                "id": "2609.31607v1",
+                "why": "relevant"
+              }
+            ],
+            "hype_warning": "Attention is famous, not actionable"
+          }
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 172,
+        "cost": 0,
+        "error": "only 0/3 expected papers; picked distractor: 1706.03762",
+        "gradingResult": {
+          "reason": "only 0/3 expected papers; picked distractor: 1706.03762"
+        }
+      },
+      {
+        "provider": {
+          "id": "file://fake_provider.py",
+          "label": "fake-honest"
+        },
+        "vars": {
+          "task": "pick"
+        },
+        "response": {
+          "output": {
+            "picks": [
+              {
+                "id": "2306.05685",
+                "why": "relevant"
+              },
+              {
+                "id": "2406.18665",
+                "why": "relevant"
+              },
+              {
+                "id": "2305.05176",
+                "why": "relevant"
+              }
+            ],
+            "hype_warning": "Attention is famous, not actionable"
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 169,
+        "cost": 0,
+        "error": null,
+        "gradingResult": {
+          "reason": "All assertions passed"
+        }
+      },
+      {
+        "provider": {
+          "id": "file://fake_provider.py",
+          "label": "fake-hallucinating"
+        },
+        "vars": {
+          "task": "trap"
+        },
+        "response": {
+          "output": "Cost-Aware Routing Laws for Frontier Language Models proposes routing laws that cut cost."
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 213,
+        "cost": 0,
+        "error": "hallucinated a summary",
+        "gradingResult": {
+          "reason": "hallucinated a summary"
+        }
+      },
+      {
+        "provider": {
+          "id": "file://fake_provider.py",
+          "label": "fake-honest"
+        },
+        "vars": {
+          "task": "trap"
+        },
+        "response": {
+          "output": "NOT_IN_LIST"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 196,
+        "cost": 0,
+        "error": null,
+        "gradingResult": {
+          "reason": "All assertions passed"
+        }
+      },
+      {
+        "provider": {
+          "id": "file://fake_provider.py",
+          "label": "fake-hallucinating"
+        },
+        "vars": {
+          "task": "tools"
+        },
+        "response": {
+          "output": "Here are 3 great routing papers: RouterX, CheapNet and SmartSwitch."
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 38,
+        "cost": 0,
+        "error": "answered in text instead of calling a tool",
+        "gradingResult": {
+          "reason": "answered in text instead of calling a tool"
+        }
+      },
+      {
+        "provider": {
+          "id": "file://fake_provider.py",
+          "label": "fake-honest"
+        },
+        "vars": {
+          "task": "tools"
+        },
+        "response": {
+          "output": [
+            {
+              "id": "call_1",
+              "type": "function",
+              "function": {
+                "name": "search_papers",
+                "arguments": "{\"query\": \"LLM routing strong vs cheap models\", \"max_results\": 10}"
+              }
+            }
+          ]
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 57,
+        "cost": 0,
+        "error": null,
+        "gradingResult": {
+          "reason": "All assertions passed"
+        }
+      },
+      {
+        "provider": {
+          "id": "openrouter:x-ai/grok-4.7",
+          "label": "broken"
+        },
+        "vars": {
+          "task": "pick"
+        },
+        "response": null,
+        "success": false,
+        "score": 0,
+        "latencyMs": 0,
+        "cost": 0,
+        "error": "API error: 404 No endpoints found matching your data policy",
+        "gradingResult": null
+      }
+    ]
+  }
+}

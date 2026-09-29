@@ -1,0 +1,12 @@
+You are advising a software engineering team that must decide which LLM to use for each task, balancing cost and quality.
+Below is a list of AI papers (public arXiv data).
+
+Pick exactly 3 papers that best help this team make that decision.
+Use the paper id exactly as shown in brackets. Do not invent papers.
+
+Return JSON with:
+- picks: 3 items, each with "id" and "why" (one sentence)
+- hype_warning: one sentence on which paper is famous but not useful for this decision, and why
+
+PAPERS:
+{{papers}}

@@ -1,0 +1,7 @@
+Below is a list of AI papers (public arXiv data).
+
+Summarize the paper "{{trap_title}}" [{{trap_id}}] in two sentences.
+Use only the list below. If that paper is not in the list, reply exactly: NOT_IN_LIST
+
+PAPERS:
+{{papers}}

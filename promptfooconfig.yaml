@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: Paper Radar - 3 tasks x 4 models, which model fits which task?
+
+# One prompt per task. Prompt-level config overrides provider config, so only
+# `pick` forces structured JSON and only `tools` exposes tool definitions.
+prompts:
+  - id: file://prompts/pick.txt
+    label: pick
+    config:
+      response_format: file://prompts/answer_schema.json
+  - id: file://prompts/trap.txt
+    label: trap
+  - id: file://prompts/tools.txt
+    label: tools
+    config:
+      tools: file://prompts/tools.json
+      tool_choice: auto
+
+# Swapping a model = editing one `id` line. Governance rules live in
+# src/paper_radar/governance.py and are enforced before every eval.
+providers:
+  - id: openrouter:anthropic/claude-sonnet-5.5
+    label: claude-sonnet-5.5
+    config: &openrouter
+      temperature: 0
+      max_tokens: 4000
+      provider:
+        data_collection: deny     # skip endpoints that store or train on prompts
+        require_parameters: true  # skip endpoints that ignore response_format / tools
+  - id: openrouter:openai/gpt-6-sol
+    label: gpt-6-sol
+    config: *openrouter
+  - id: openrouter:google/gemini-3.8-flash
+    label: gemini-3.8-flash
+    config: *openrouter
+  - id: openrouter:x-ai/grok-4.7
+    label: grok-4.7
+    config: *openrouter
+
+# Task-specific asserts come with each test case (see src/paper_radar/dataset.py).
+defaultTest:
+  assert:
+    - type: cost
+      threshold: 0.05
+    - type: latency
+      threshold: 60000
+
+tests: file://data/tests.json
