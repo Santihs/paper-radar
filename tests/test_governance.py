@@ -89,3 +89,8 @@ def test_gpt_never_sends_temperature() -> None:
     ]
     assert "temperature" not in gpt
     assert gpt["omitDefaults"] is True
+
+
+def test_every_model_is_attributed_to_paper_radar() -> None:
+    providers = load_config(PROMPTFOO_CONFIG)["providers"]
+    assert all(p["config"]["headers"]["X-Title"] == "paper-radar" for p in providers)
