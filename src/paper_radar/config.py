@@ -20,6 +20,12 @@ PROMPTFOO_VERSION: Final = "0.123.1"
 # Governance: only these model vendors may appear in promptfooconfig.yaml.
 ALLOWED_VENDORS: Final = frozenset({"anthropic", "google", "mistralai", "openai", "x-ai"})
 
+# Governance: who may *host* the inference (OpenRouter provider slugs). The model maker
+# plus the big clouds; each model pins its own subset with provider.order.
+ALLOWED_HOSTS: Final = frozenset(
+    {"anthropic", "openai", "google-ai-studio", "xai", "azure", "amazon-bedrock", "google-vertex"}
+)
+
 ARXIV_CATEGORIES: Final = ("cs.AI", "cs.CL")
 RECENT_COUNT: Final = 14
 PICKS_PER_ANSWER: Final = 3

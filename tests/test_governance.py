@@ -1,5 +1,7 @@
 """Governance as a test: the real promptfooconfig.yaml must follow policy."""
 
+from typing import Any
+
 import pytest
 
 from paper_radar.config import PROMPTFOO_CONFIG
@@ -12,9 +14,23 @@ def test_repo_config_complies_with_policy() -> None:
     assert find_violations(config) == []
 
 
-def provider(pid: str, data_collection: str | None = "deny") -> dict[str, object]:
-    routing = {"data_collection": data_collection} if data_collection else {}
-    return {"id": pid, "config": {"provider": routing}}
+def test_repo_config_starts_with_the_model_maker() -> None:
+    first_host = {
+        p["id"]: p["config"]["provider"]["order"][0]
+        for p in load_config(PROMPTFOO_CONFIG)["providers"]
+    }
+    assert first_host == {
+        "openrouter:anthropic/claude-sonnet-5.5": "anthropic",
+        "openrouter:openai/gpt-6-sol": "openai",
+        "openrouter:google/gemini-3.8-flash": "google-ai-studio",
+        "openrouter:x-ai/grok-4.7": "xai",
+    }
+
+
+def provider(pid: str, **routing: Any) -> dict[str, Any]:
+    base = {"data_collection": "deny", "order": ["openai"], "allow_fallbacks": False}
+    merged = {k: v for k, v in {**base, **routing}.items() if v is not None}
+    return {"id": pid, "config": {"provider": merged}}
 
 
 @pytest.mark.parametrize(
@@ -23,16 +39,34 @@ def provider(pid: str, data_collection: str | None = "deny") -> dict[str, object
         (provider("openrouter:deepseek/deepseek-v4"), "vendor 'deepseek' is not allowed"),
         (provider("openrouter:qwen/qwen-4"), "vendor 'qwen' is not allowed"),
         (provider("openai:gpt-6-sol"), "must be called through OpenRouter"),
-        (provider("openrouter:openai/gpt-6-sol", None), "data_collection: deny"),
-        (provider("openrouter:openai/gpt-6-sol", "allow"), "data_collection: deny"),
-        ("openrouter:openai/gpt-6-sol", "data_collection: deny"),
+        (provider("openrouter:openai/gpt-6-sol", data_collection=None), "data_collection: deny"),
+        (provider("openrouter:openai/gpt-6-sol", data_collection="allow"), "data_collection: deny"),
+        (provider("openrouter:openai/gpt-6-sol", order=None), "missing provider.order"),
+        (
+            provider("openrouter:openai/gpt-6-sol", order=["openai", "deepinfra"]),
+            "host 'deepinfra'",
+        ),
+        (
+            provider("openrouter:openai/gpt-6-sol", allow_fallbacks=True),
+            "allow_fallbacks must be false",
+        ),
+        (
+            provider("openrouter:openai/gpt-6-sol", allow_fallbacks=None),
+            "allow_fallbacks must be false",
+        ),
     ],
 )
-def test_violations_detected(entry: object, reason: str) -> None:
+def test_single_violation_detected(entry: dict[str, Any], reason: str) -> None:
     [violation] = find_violations({"providers": [entry]})
     assert reason in violation.reason
 
 
+def test_bare_string_provider_reports_every_missing_rule() -> None:
+    reasons = [v.reason for v in find_violations({"providers": ["openrouter:openai/gpt-6-sol"]})]
+    assert any("data_collection" in r for r in reasons)
+    assert any("provider.order" in r for r in reasons)
+
+
 def test_compliant_provider_passes() -> None:
-    compliant = provider("openrouter:anthropic/claude-sonnet-5.5")
+    compliant = provider("openrouter:anthropic/claude-sonnet-5.5", order=["anthropic", "azure"])
     assert find_violations({"providers": [compliant]}) == []
