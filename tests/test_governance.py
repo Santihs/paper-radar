@@ -70,3 +70,22 @@ def test_bare_string_provider_reports_every_missing_rule() -> None:
 def test_compliant_provider_passes() -> None:
     compliant = provider("openrouter:anthropic/claude-sonnet-5.5", order=["anthropic", "azure"])
     assert find_violations({"providers": [compliant]}) == []
+
+
+def test_prompts_with_config_are_not_txt() -> None:
+    # promptfoo 0.123.1 silently drops prompt-level config (tools, response_format) for .txt
+    prompts = load_config(PROMPTFOO_CONFIG)["prompts"]
+    with_config = [p["id"] for p in prompts if isinstance(p, dict) and p.get("config")]
+    assert with_config
+    assert not [pid for pid in with_config if pid.endswith(".txt")]
+
+
+def test_gpt_never_sends_temperature() -> None:
+    # GPT-6 Sol endpoints reject temperature; with require_parameters that is a 404
+    [gpt] = [
+        p["config"]
+        for p in load_config(PROMPTFOO_CONFIG)["providers"]
+        if p["id"] == "openrouter:openai/gpt-6-sol"
+    ]
+    assert "temperature" not in gpt
+    assert gpt["omitDefaults"] is True

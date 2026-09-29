@@ -3,14 +3,15 @@ description: Paper Radar - 3 tasks x 4 models, which model fits which task?
 
 # One prompt per task. Prompt-level config overrides provider config, so only
 # `pick` forces structured JSON and only `tools` exposes tool definitions.
+# Prompts are .j2 on purpose: promptfoo 0.123.1 drops prompt-level config for .txt files.
 prompts:
-  - id: file://prompts/pick.txt
+  - id: file://prompts/pick.j2
     label: pick
     config:
       response_format: file://prompts/answer_schema.json
-  - id: file://prompts/trap.txt
+  - id: file://prompts/trap.j2
     label: trap
-  - id: file://prompts/tools.txt
+  - id: file://prompts/tools.j2
     label: tools
     config:
       tools: file://prompts/tools.json
@@ -30,6 +31,7 @@ providers:
     config:
       temperature: 0
       max_tokens: 4000
+      showThinking: false  # grade the answer, not the reasoning trace
       provider:
         order: [anthropic, google-vertex, azure]
         allow_fallbacks: false
@@ -38,8 +40,11 @@ providers:
   - id: openrouter:openai/gpt-6-sol
     label: gpt-6-sol
     config:
-      temperature: 0
+      # No temperature: GPT-6 Sol endpoints reject it and require_parameters would drop them all.
+      # omitDefaults stops promptfoo from injecting its default temperature: 0.
+      omitDefaults: true
       max_tokens: 4000
+      showThinking: false  # grade the answer, not the reasoning trace
       provider:
         order: [openai, azure, amazon-bedrock]  # not served on Vertex
         allow_fallbacks: false
@@ -50,6 +55,7 @@ providers:
     config:
       temperature: 0
       max_tokens: 4000
+      showThinking: false  # grade the answer, not the reasoning trace
       provider:
         order: [google-ai-studio, google-vertex]  # Google only, no Azure/Bedrock
         allow_fallbacks: false
@@ -60,6 +66,7 @@ providers:
     config:
       temperature: 0
       max_tokens: 4000
+      showThinking: false  # grade the answer, not the reasoning trace
       provider:
         order: [xai]  # xAI only (has a zero-data-retention endpoint)
         allow_fallbacks: false

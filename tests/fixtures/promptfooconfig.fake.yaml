@@ -3,12 +3,17 @@
 description: Paper Radar offline e2e
 
 prompts:
-  - id: file://../../prompts/pick.txt
+  - id: file://../../prompts/pick.j2
     label: pick
-  - id: file://../../prompts/trap.txt
+    config:
+      response_format: file://../../prompts/answer_schema.json
+  - id: file://../../prompts/trap.j2
     label: trap
-  - id: file://../../prompts/tools.txt
+  - id: file://../../prompts/tools.j2
     label: tools
+    config:
+      tools: file://../../prompts/tools.json
+      tool_choice: auto
 
 providers:
   - id: file://fake_provider.py

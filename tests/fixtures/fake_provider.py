@@ -11,6 +11,8 @@ from typing import Any
 def call_api(prompt: str, options: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     v = context["vars"]
     honest = options["config"].get("mode") == "honest"
+    # Like a real model: no tools in the request means no tool call is possible.
+    received_tools = bool((context.get("prompt") or {}).get("config", {}).get("tools"))
     task = v["task"]
 
     if task == "pick":
@@ -28,7 +30,7 @@ def call_api(prompt: str, options: dict[str, Any], context: dict[str, Any]) -> d
         )
         return {"output": text}
 
-    if honest:
+    if honest and received_tools:
         args = json.dumps({"query": "LLM routing strong vs cheap models", "max_results": 10})
         call = {
             "id": "call_1",
