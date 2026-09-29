@@ -78,3 +78,13 @@ def test_fetch_rate_limited_keeps_existing_dataset(
     monkeypatch.setattr(cli, "fetch_papers", rate_limited)
     assert cli.main(["fetch"]) == 1
     assert tests_file.read_text() == "[]"
+
+
+def test_read_env_file_parses_keys_without_quotes(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text('# comment\n\nOPENROUTER_API_KEY="sk-or-test"\nexport OTHER=1\nbroken\n')
+    assert cli.read_env_file(env_file) == {"OPENROUTER_API_KEY": "sk-or-test", "OTHER": "1"}
+
+
+def test_read_env_file_missing_is_empty(tmp_path: Path) -> None:
+    assert cli.read_env_file(tmp_path / "missing.env") == {}

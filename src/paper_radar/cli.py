@@ -15,6 +15,7 @@ import sys
 import time
 import urllib.error
 from collections.abc import Sequence
+from pathlib import Path
 
 import truststore
 from rich.console import Console
@@ -82,14 +83,26 @@ def cmd_consensus(args: argparse.Namespace) -> int:
     return 0
 
 
+def read_env_file(path: Path) -> dict[str, str]:
+    """Parse KEY=VALUE lines (comments, blanks and optional quotes allowed)."""
+    if not path.exists():
+        return {}
+    values = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        key, sep, value = line.strip().removeprefix("export ").partition("=")
+        if sep and key and not key.startswith("#"):
+            values[key.strip()] = value.strip().strip("'\"")
+    return values
+
+
 def _promptfoo(args: Sequence[str]) -> int:
     pnpm = shutil.which("pnpm")
     if pnpm is None:
         console.print("[red]pnpm not found on PATH[/]")
         return 1
-    if config.ENV_FILE.exists():
-        args = [*args, "--env-file", str(config.ENV_FILE)]
+    # Secrets go through the process env: pnpm dlx would swallow a --env-file flag.
     env = {
+        **read_env_file(config.ENV_FILE),
         **os.environ,
         "PROMPTFOO_DISABLE_TELEMETRY": "1",
         "PROMPTFOO_DISABLE_SHARING": "1",
